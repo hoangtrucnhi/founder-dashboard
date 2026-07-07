@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PopMinutes Streamer-Only Control Dashboard</title>
+    <title>PopMinutes Ultimate Streamer-Only Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -13,11 +13,12 @@
             font-family: 'Inter', sans-serif;
             background: rgba(0, 0, 0, 0); /* Trong suốt tuyệt đối cho OBS */
             margin: 0;
-            padding: 20px;
+            padding: 16px;
             overflow: hidden;
             display: flex;
             align-items: start;
             gap: 24px;
+            width: 100%;
         }
         /* Phong cách Business Glass */
         .business-card {
@@ -37,28 +38,28 @@
             opacity: 1;
         }
 
-        /* ================= BIẾN PHÉP THUẬT: CHỈ STREAMER THẤY KHI INTERACT ================= */
-        /* Mặc định trên luồng phát sóng (Stream): Bảng điều khiển ẩn hoàn toàn */
+        /* ================= KỸ THUẬT PHÂN TÁCH MÀN HÌNH CHUYÊN NGHIỆP ================= */
+        /* Mặc định: Bảng điều khiển ẩn hoàn toàn để không chiếm không gian trên Live */
         #control-panel {
+            display: none;
             opacity: 0;
-            transform: translateX(-20px) scale(0.95);
             width: 0;
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow: hidden;
+            transition: opacity 0.3s ease;
         }
 
-        /* CHỈ KHI cậu mở cửa sổ INTERACT và click vào widget (Focus) thì bảng điều khiển mới hiện ra trong hậu trường */
-        body:focus-within #control-panel,
-        body:hover #control-panel {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-            width: 430px;
-            pointer-events: auto;
+        /* CHỈ KHI KÍCH THƯỚC CỬA SỔ LỚN HƠN 430PX (Khi cậu kéo rộng cửa sổ Interact) -> Mới cho phép hiển thị */
+        @media (min-width: 430px) {
+            #control-panel {
+                display: block;
+                opacity: 1;
+                width: 430px;
+            }
         }
     </style>
 </head>
-<body tabindex="0"> <div class="w-[400px] space-y-4 flex-shrink-0">
+<body>
+
+    <div class="w-[390px] space-y-4 flex-shrink-0">
         
         <div class="business-card rounded-xl p-6 text-center relative overflow-hidden">
             <div id="current-phase" class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded mt-1 inline-block">
@@ -79,10 +80,10 @@
                 </span>
                 <span id="achievement-percent" class="text-sm font-bold text-blue-400 tabular-nums">0%</span>
             </div>
-            <div id="objective-text" class="text-sm font-bold text-white bg-black/40 px-3.5 py-3 rounded-lg border border-white/10 leading-relaxed min-h-[46px] tracking-wide">
+            <div id="objective-text" class="text-base font-bold text-white bg-black/40 px-4 py-3.5 rounded-lg border border-white/10 leading-relaxed min-h-[50px] tracking-wide">
                 Workspace and Meeting Minutes Analytics Execution
             </div>
-            <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+            <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
                 <div id="achievement-bar" class="h-full bg-blue-500 w-0 transition-all duration-500"></div>
             </div>
         </div>
@@ -94,7 +95,7 @@
                 </div>
                 <div class="flex-1">
                     <h4 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Executive Insights</h4>
-                    <p id="popup-text" class="text-sm text-slate-100 mt-1.5 leading-relaxed font-semibold tracking-wide">
+                    <p id="popup-text" class="text-base text-slate-100 mt-1.5 leading-relaxed font-bold tracking-wide">
                         Awaiting brief updates...
                     </p>
                 </div>
@@ -106,7 +107,7 @@
     <div id="control-panel" class="bg-slate-900 border border-white/15 rounded-xl p-5 space-y-4 shadow-2xl flex-shrink-0 mt-2">
         <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-white/10 pb-2">
             <span class="flex items-center gap-1.5"><i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Streamer Control Dashboard</span>
-            <span class="text-[9px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono border border-blue-500/30">Interact Active</span>
+            <span class="text-[9px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono border border-blue-500/30">Interact Window Open</span>
         </div>
         
         <div class="space-y-1.5">
