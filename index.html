@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PopMinutes Auto-Hide Executive Dashboard</title>
+    <title>PopMinutes Streamer-Only Control Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -37,29 +37,28 @@
             opacity: 1;
         }
 
-        /* ================= CƠ CHẾ CODE TỰ ĐỘNG ẨN/HIỆN PHẦN ĐIỀU KHIỂN ================= */
-        /* Mặc định trên Stream: Bảng điều khiển sẽ bị ẩn hoàn toàn và thu gọn không chiếm không gian */
+        /* ================= BIẾN PHÉP THUẬT: CHỈ STREAMER THẤY KHI INTERACT ================= */
+        /* Mặc định trên luồng phát sóng (Stream): Bảng điều khiển ẩn hoàn toàn */
         #control-panel {
             opacity: 0;
             transform: translateX(-20px) scale(0.95);
             width: 0;
-            pointer-events: none; /* Khóa tương tác khi ẩn */
+            pointer-events: none;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden;
         }
 
-        /* Khi cậu mở Cửa sổ Interact và RÊ CHUỘT vào vùng widget: Bảng điều khiển tự động bung ra mượt mà */
+        /* CHỈ KHI cậu mở cửa sổ INTERACT và click vào widget (Focus) thì bảng điều khiển mới hiện ra trong hậu trường */
+        body:focus-within #control-panel,
         body:hover #control-panel {
             opacity: 1;
             transform: translateX(0) scale(1);
             width: 430px;
-            pointer-events: auto; /* Bật lại tương tác để bấm */
+            pointer-events: auto;
         }
     </style>
 </head>
-<body>
-
-    <div class="w-[400px] space-y-4 flex-shrink-0">
+<body tabindex="0"> <div class="w-[400px] space-y-4 flex-shrink-0">
         
         <div class="business-card rounded-xl p-6 text-center relative overflow-hidden">
             <div id="current-phase" class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded mt-1 inline-block">
@@ -80,10 +79,10 @@
                 </span>
                 <span id="achievement-percent" class="text-sm font-bold text-blue-400 tabular-nums">0%</span>
             </div>
-            <div id="objective-text" class="text-xs font-semibold text-white bg-black/30 px-3 py-2.5 rounded border border-white/5 leading-relaxed min-h-[40px]">
+            <div id="objective-text" class="text-sm font-bold text-white bg-black/40 px-3.5 py-3 rounded-lg border border-white/10 leading-relaxed min-h-[46px] tracking-wide">
                 Workspace and Meeting Minutes Analytics Execution
             </div>
-            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+            <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
                 <div id="achievement-bar" class="h-full bg-blue-500 w-0 transition-all duration-500"></div>
             </div>
         </div>
@@ -95,7 +94,7 @@
                 </div>
                 <div class="flex-1">
                     <h4 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Executive Insights</h4>
-                    <p id="popup-text" class="text-xs text-slate-200 mt-1 leading-relaxed font-medium">
+                    <p id="popup-text" class="text-sm text-slate-100 mt-1.5 leading-relaxed font-semibold tracking-wide">
                         Awaiting brief updates...
                     </p>
                 </div>
@@ -262,6 +261,12 @@
             textPlay.textContent = "Start Timer";
             updateTimerDisplay();
             lucide.createIcons();
+        }
+
+        function skipTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            handlePhaseEnd();
         }
 
         // --- ACHIEVEMENT MANAGEMENT ---
