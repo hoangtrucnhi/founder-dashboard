@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PopMinutes Balanced Ultra-Large Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2=family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -88,9 +88,9 @@
         <div id="stream-popup" class="business-card rounded-2xl p-5 border-l-4 border-l-blue-400 popup-transition space-y-3">
             <div class="flex items-center gap-3 border-b border-white/10 pb-2">
                 <div class="p-2 bg-blue-500/10 rounded-lg">
-                    <i data-lucide="terminal" class="w-6 h-6 text-blue-400"></i>
+                    <i data-lucide="megaphone" class="w-6 h-6 text-blue-400"></i>
                 </div>
-                <h4 class="text-xl font-black text-blue-400 uppercase tracking-wide">Executive Insights</h4>
+                <h4 class="text-xl font-black text-blue-400 uppercase tracking-wide">Streamer's Thoughts</h4>
             </div>
             <p id="popup-text" class="text-xl text-slate-100 leading-snug font-extrabold tracking-wide">
                 Awaiting brief updates...
@@ -167,9 +167,9 @@
     <script>
         // --- POMODORO CORE CONFIG ---
         const MODES = {
+            COUNTDOWN: { name: 'PREPARE PHASE', seconds: 10, isPrep: true },
             FOCUS: { name: 'FOCUS PHASE', minutes: 25 },
-            SHORT: { name: 'SHORT BREAK', minutes: 5 },
-            LONG: { name: 'LONG BREAK', minutes: 15 }
+            SHORT: { name: 'SHORT BREAK', minutes: 5 }
         };
 
         let currentMode = MODES.FOCUS;
@@ -178,6 +178,7 @@
         let currentCycle = 1;
         let isRunning = false;
         let currentProgress = 0;
+        let hasInitializedPrep = false; // Đánh dấu kiểm soát nút Start lần đầu
 
         const timerDisplay = document.getElementById('timer-display');
         const currentPhaseElement = document.getElementById('current-phase');
@@ -196,7 +197,11 @@
             currentPhaseElement.textContent = currentMode.name;
             cycleDisplay.textContent = `Session Cycle: #${currentCycle}`;
             
-            if (currentMode === MODES.FOCUS) {
+            if (currentMode.isPrep) {
+                // Màu vàng hổ phách đặc thù cho 10 giây chuẩn bị
+                currentPhaseElement.className = "w-full text-3xl font-black uppercase tracking-wider text-amber-400 bg-amber-500/10 border-2 border-amber-500/30 py-3 rounded-xl block";
+                timerDisplay.className = "text-8xl font-light tracking-tighter text-amber-400 tabular-nums my-2";
+            } else if (currentMode === MODES.FOCUS) {
                 currentPhaseElement.className = "w-full text-3xl font-black uppercase tracking-wider text-blue-400 bg-blue-500/10 border-2 border-blue-500/30 py-3 rounded-xl block";
                 timerDisplay.className = "text-8xl font-light tracking-tighter text-white tabular-nums my-2";
             } else {
@@ -220,6 +225,14 @@
                 textPlay.textContent = "Start Timer";
                 isRunning = false;
             } else {
+                // Nếu bắt đầu từ trạng thái reset hoặc lần đầu tiên bấm: Ép nhảy vào 10s chuẩn bị trước
+                if (!hasInitializedPrep && currentMode === MODES.FOCUS && timeRemaining === MODES.FOCUS.minutes * 60) {
+                    currentMode = MODES.COUNTDOWN;
+                    timeRemaining = MODES.COUNTDOWN.seconds;
+                    hasInitializedPrep = true;
+                    updateGauges();
+                }
+
                 isRunning = true;
                 iconPlay.setAttribute('data-lucide', 'pause');
                 textPlay.textContent = "Pause Timer";
@@ -240,34 +253,41 @@
             clearInterval(timer);
             isRunning = false;
 
-            if (currentMode === MODES.FOCUS) {
-                if (currentCycle % 4 === 0) {
-                    currentMode = MODES.LONG;
-                } else {
-                    currentMode = MODES.SHORT;
-                }
+            if (currentMode.isPrep) {
+                // Hết 10 giây chuẩn bị -> Chuyển sang Focus
+                currentMode = MODES.FOCUS;
+                timeRemaining = currentMode.minutes * 60;
+            } else if (currentMode === MODES.FOCUS) {
+                // Hết Focus -> Chuyển sang Short Break luôn (Bỏ Long Break)
+                currentMode = MODES.SHORT;
+                timeRemaining = currentMode.minutes * 60;
             } else {
+                // Hết Short Break -> Quay lại Focus và tăng cycle
                 currentCycle++;
                 currentMode = MODES.FOCUS;
+                timeRemaining = currentMode.minutes * 60;
+                hasInitializedPrep = false; // Reset cờ để vòng kế tiếp lại có 10s chuẩn bị
             }
 
-            timeRemaining = currentMode.minutes * 60;
             iconPlay.setAttribute('data-lucide', 'play');
             textPlay.textContent = "Start Timer";
             
             updateGauges();
             updateTimerDisplay();
             lucide.createIcons();
-            toggleTimer();
+            toggleTimer(); // Chạy tự động chu kỳ tiếp theo
         }
 
         function resetTimer() {
             clearInterval(timer);
             isRunning = false;
+            currentMode = MODES.FOCUS;
             timeRemaining = currentMode.minutes * 60;
+            hasInitializedPrep = false;
             iconPlay.setAttribute('data-lucide', 'play');
             textPlay.textContent = "Start Timer";
             updateTimerDisplay();
+            updateGauges();
             lucide.createIcons();
         }
 
