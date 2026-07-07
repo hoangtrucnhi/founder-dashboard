@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PopMinutes Executive Dual-Zone Dashboard</title>
-    <!-- Google Fonts & Tailwind CSS -->
+    <title>PopMinutes Auto-Hide Executive Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -15,13 +13,15 @@
             font-family: 'Inter', sans-serif;
             background: rgba(0, 0, 0, 0); /* Trong suốt tuyệt đối cho OBS */
             margin: 0;
-            padding: 24px;
-            overflow-x: auto; /* Cho phép cuộn ngang nếu cửa sổ tương tác nhỏ */
-            overflow-y: hidden;
+            padding: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: start;
+            gap: 24px;
         }
         /* Phong cách Business Glass */
         .business-card {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -36,132 +36,134 @@
             transform: translateY(0);
             opacity: 1;
         }
+
+        /* ================= CƠ CHẾ CODE TỰ ĐỘNG ẨN/HIỆN PHẦN ĐIỀU KHIỂN ================= */
+        /* Mặc định trên Stream: Bảng điều khiển sẽ bị ẩn hoàn toàn và thu gọn không chiếm không gian */
+        #control-panel {
+            opacity: 0;
+            transform: translateX(-20px) scale(0.95);
+            width: 0;
+            pointer-events: none; /* Khóa tương tác khi ẩn */
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        /* Khi cậu mở Cửa sổ Interact và RÊ CHUỘT vào vùng widget: Bảng điều khiển tự động bung ra mượt mà */
+        body:hover #control-panel {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            width: 430px;
+            pointer-events: auto; /* Bật lại tương tác để bấm */
+        }
     </style>
 </head>
-<body class="bg-transparent">
+<body>
 
-    <!-- BỐ CỤC HAI VÙNG (DUAL-ZONE LAYOUT) -->
-    <div class="flex items-start gap-12 w-[950px]">
+    <div class="w-[400px] space-y-4 flex-shrink-0">
         
-        <!-- ================= ZONE 1: STREAM VIEW (Bên trái - Rộng 400px) ================= -->
-        <!-- Đây là phần sẽ hiển thị trên Livestream của cậu -->
-        <div class="w-[400px] space-y-4 flex-shrink-0">
-            
-            <!-- POMODORO CORE -->
-            <div class="business-card rounded-xl p-6 text-center relative overflow-hidden">
-                <div id="current-phase" class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded mt-1 inline-block">
-                    FOCUS PHASE
-                </div>
-                <div id="timer-display" class="text-7xl font-light tracking-tight text-white tabular-nums my-4">
-                    25:00
-                </div>
-                <div id="cycle-display" class="text-[11px] text-slate-400 font-medium tracking-wide">
-                    Session Cycle: #1
-                </div>
+        <div class="business-card rounded-xl p-6 text-center relative overflow-hidden">
+            <div id="current-phase" class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded mt-1 inline-block">
+                FOCUS PHASE
             </div>
-
-            <!-- TARGET & MILESTONE -->
-            <div class="business-card rounded-xl p-5 space-y-4">
-                <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <i data-lucide="briefcase" class="w-3.5 h-3.5 text-blue-400"></i> Current Objective
-                    </span>
-                    <span id="achievement-percent" class="text-sm font-bold text-blue-400 tabular-nums">0%</span>
-                </div>
-                <div id="objective-text" class="text-xs font-semibold text-white bg-black/30 px-3 py-2.5 rounded border border-white/5 leading-relaxed min-h-[40px]">
-                    Workspace and Meeting Minutes Analytics Execution
-                </div>
-                <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                    <div id="achievement-bar" class="h-full bg-blue-500 w-0 transition-all duration-500"></div>
-                </div>
+            <div id="timer-display" class="text-7xl font-light tracking-tight text-white tabular-nums my-4">
+                25:00
             </div>
-
-            <!-- POPUP THOUGHT NOTE -->
-            <div id="stream-popup" class="business-card rounded-xl p-4 border-l-2 border-l-blue-400 popup-transition">
-                <div class="flex items-start gap-3">
-                    <div class="p-1.5 bg-blue-500/10 rounded mt-0.5">
-                        <i data-lucide="terminal" class="w-3.5 h-3.5 text-blue-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Executive Insights</h4>
-                        <p id="popup-text" class="text-xs text-slate-200 mt-1 leading-relaxed font-medium">
-                            Awaiting brief updates...
-                        </p>
-                    </div>
-                </div>
+            <div id="cycle-display" class="text-[11px] text-slate-400 font-medium tracking-wide">
+                Session Cycle: #1
             </div>
-
         </div>
 
-        <!-- ================= ZONE 2: CONTROL PANEL (Bên phải - Rộng 450px) ================= -->
-        <!-- Đây là bảng điều khiển ngầm biệt lập, cậu dùng Interact kéo rộng ra để bấm -->
-        <div class="w-[450px] bg-slate-900 border border-white/15 rounded-xl p-5 space-y-4 shadow-2xl flex-shrink-0 mt-2">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-white/10 pb-2">
-                <span class="flex items-center gap-1.5"><i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Streamer Control Dashboard</span>
-                <span class="text-[9px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono border border-blue-500/30">Interact Panel</span>
+        <div class="business-card rounded-xl p-5 space-y-4">
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <i data-lucide="briefcase" class="w-3.5 h-3.5 text-blue-400"></i> Current Objective
+                </span>
+                <span id="achievement-percent" class="text-sm font-bold text-blue-400 tabular-nums">0%</span>
             </div>
-            
-            <!-- 1. Sửa text Objective trực tiếp -->
-            <div class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit Current Objective:
-                </label>
-                <input type="text" id="target-input" class="w-full bg-black/40 border border-white/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition" 
-                    value="Workspace and Meeting Minutes Analytics Execution" oninput="document.getElementById('objective-text').textContent = this.value">
+            <div id="objective-text" class="text-xs font-semibold text-white bg-black/30 px-3 py-2.5 rounded border border-white/5 leading-relaxed min-h-[40px]">
+                Workspace and Meeting Minutes Analytics Execution
             </div>
+            <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                <div id="achievement-bar" class="h-full bg-blue-500 w-0 transition-all duration-500"></div>
+            </div>
+        </div>
 
-            <!-- 2. Điều khiển tăng giảm phần trăm % -->
-            <div class="flex items-center justify-between bg-black/20 p-3 rounded border border-white/5">
-                <span class="text-xs text-slate-300 font-medium">Adjust Progress Milestone:</span>
-                <div class="flex gap-2">
-                    <button onclick="adjustProgress(-10)" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-xs font-bold text-white rounded border border-white/20 transition shadow">
-                        -10%
-                    </button>
-                    <button onclick="adjustProgress(10)" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-bold text-white rounded border border-blue-400 transition shadow">
-                        +10%
-                    </button>
+        <div id="stream-popup" class="business-card rounded-xl p-4 border-l-2 border-l-blue-400 popup-transition">
+            <div class="flex items-start gap-3">
+                <div class="p-1.5 bg-blue-500/10 rounded mt-0.5">
+                    <i data-lucide="terminal" class="w-3.5 h-3.5 text-blue-400"></i>
                 </div>
-            </div>
-            
-            <!-- 3. Bộ nút Start/Pause/Reset/Skip Pomodoro -->
-            <div class="space-y-1.5">
-                <label class="text-[11px] font-semibold text-slate-300"><i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1"></i> Timer Management:</label>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="toggleTimer()" id="btn-play" class="col-span-2 py-2.5 bg-white hover:bg-slate-100 text-slate-950 text-xs font-bold rounded transition flex items-center justify-center gap-1.5 shadow-md">
-                        <i data-lucide="play" class="w-4 h-4 fill-slate-950" id="icon-play"></i> <span id="text-play">Start Timer</span>
-                    </button>
-                    <div class="flex gap-1">
-                        <button onclick="resetTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Reset">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="skipTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Skip">
-                            <i data-lucide="skip-forward" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Ô gõ xuất bản tin nhắn popup -->
-            <div class="space-y-2 border-t border-white/5 pt-3">
-                <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                    <i data-lucide="megaphone" class="w-3.5 h-3.5 text-emerald-400"></i> Broadcast Instant Thought:
-                </label>
-                <div class="flex gap-2">
-                    <input type="text" id="thoughts-input" class="flex-1 bg-black/40 border border-white/20 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
-                        placeholder="Type message to pop up on screen...">
-                    <button onclick="publishThought()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white rounded transition flex items-center gap-1 shadow">
-                        <i data-lucide="send" class="w-3.5 h-3.5"></i> Publish
-                    </button>
-                    <button onclick="clearThought()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 rounded border border-white/10 transition">
-                        Hide
-                    </button>
+                <div class="flex-1">
+                    <h4 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Executive Insights</h4>
+                    <p id="popup-text" class="text-xs text-slate-200 mt-1 leading-relaxed font-medium">
+                        Awaiting brief updates...
+                    </p>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Audio Element -->
+    <div id="control-panel" class="bg-slate-900 border border-white/15 rounded-xl p-5 space-y-4 shadow-2xl flex-shrink-0 mt-2">
+        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-white/10 pb-2">
+            <span class="flex items-center gap-1.5"><i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Streamer Control Dashboard</span>
+            <span class="text-[9px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono border border-blue-500/30">Interact Active</span>
+        </div>
+        
+        <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit Current Objective:
+            </label>
+            <input type="text" id="target-input" class="w-full bg-black/40 border border-white/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition" 
+                value="Workspace and Meeting Minutes Analytics Execution" oninput="document.getElementById('objective-text').textContent = this.value">
+        </div>
+
+        <div class="flex items-center justify-between bg-black/20 p-3 rounded border border-white/5">
+            <span class="text-xs text-slate-300 font-medium">Adjust Progress Milestone:</span>
+            <div class="flex gap-2">
+                <button onclick="adjustProgress(-10)" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-xs font-bold text-white rounded border border-white/20 transition shadow">
+                    -10%
+                </button>
+                <button onclick="adjustProgress(10)" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-bold text-white rounded border border-blue-400 transition shadow">
+                    +10%
+                </button>
+            </div>
+        </div>
+        
+        <div class="space-y-1.5">
+            <label class="text-[11px] font-semibold text-slate-300"><i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1"></i> Timer Management:</label>
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="toggleTimer()" id="btn-play" class="col-span-2 py-2.5 bg-white hover:bg-slate-100 text-slate-950 text-xs font-bold rounded transition flex items-center justify-center gap-1.5 shadow-md">
+                    <i data-lucide="play" class="w-4 h-4 fill-slate-950" id="icon-play"></i> <span id="text-play">Start Timer</span>
+                </button>
+                <div class="flex gap-1">
+                    <button onclick="resetTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Reset">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="skipTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Skip">
+                        <i data-lucide="skip-forward" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-2 border-t border-white/5 pt-3">
+            <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                <i data-lucide="megaphone" class="w-3.5 h-3.5 text-emerald-400"></i> Broadcast Instant Thought:
+            </label>
+            <div class="flex gap-2">
+                <input type="text" id="thoughts-input" class="flex-1 bg-black/40 border border-white/20 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                    placeholder="Type message to pop up on screen...">
+                <button onclick="publishThought()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white rounded transition flex items-center gap-1 shadow">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i> Publish
+                </button>
+                <button onclick="clearThought()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 rounded border border-white/10 transition">
+                    Hide
+                </button>
+            </div>
+        </div>
+    </div>
+
     <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-500.wav" preload="auto"></audio>
 
     <script>
@@ -260,12 +262,6 @@
             textPlay.textContent = "Start Timer";
             updateTimerDisplay();
             lucide.createIcons();
-        }
-
-        function skipTimer() {
-            clearInterval(timer);
-            isRunning = false;
-            handlePhaseEnd();
         }
 
         // --- ACHIEVEMENT MANAGEMENT ---
