@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PopMinutes Ultimate Streamer-Only Dashboard</title>
+    <title>PopMinutes Mobile-Optimized Executive Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: rgba(0, 0, 0, 0); /* Trong suốt tuyệt đối cho OBS */
+            background: rgba(0, 0, 0, 0); /* Trong suốt cho OBS */
             margin: 0;
             padding: 16px;
             overflow: hidden;
@@ -22,11 +22,11 @@
         }
         /* Phong cách Business Glass */
         .business-card {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
         .popup-transition {
             transform: translateY(20px);
@@ -38,17 +38,14 @@
             opacity: 1;
         }
 
-        /* ================= KỸ THUẬT PHÂN TÁCH MÀN HÌNH CHUYÊN NGHIỆP ================= */
-        /* Mặc định: Bảng điều khiển ẩn hoàn toàn để không chiếm không gian trên Live */
+        /* Ẩn điều khiển ở kích thước Live, chỉ hiện khi kéo rộng cửa sổ Interact trên 450px */
         #control-panel {
             display: none;
             opacity: 0;
             width: 0;
             transition: opacity 0.3s ease;
         }
-
-        /* CHỈ KHI KÍCH THƯỚC CỬA SỔ LỚN HƠN 430PX (Khi cậu kéo rộng cửa sổ Interact) -> Mới cho phép hiển thị */
-        @media (min-width: 430px) {
+        @media (min-width: 450px) {
             #control-panel {
                 display: block;
                 opacity: 1;
@@ -59,43 +56,43 @@
 </head>
 <body>
 
-    <div class="w-[390px] space-y-4 flex-shrink-0">
+    <div class="w-[410px] space-y-5 flex-shrink-0">
         
-        <div class="business-card rounded-xl p-6 text-center relative overflow-hidden">
-            <div id="current-phase" class="text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded mt-1 inline-block">
+        <div class="business-card rounded-2xl p-6 text-center relative overflow-hidden">
+            <div id="current-phase" class="text-2xl font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 border-2 border-blue-500/30 px-5 py-2 rounded-xl inline-block">
                 FOCUS PHASE
             </div>
-            <div id="timer-display" class="text-7xl font-light tracking-tight text-white tabular-nums my-4">
+            <div id="timer-display" class="text-8xl font-light tracking-tighter text-white tabular-nums my-5">
                 25:00
             </div>
-            <div id="cycle-display" class="text-[11px] text-slate-400 font-medium tracking-wide">
+            <div id="cycle-display" class="text-sm text-slate-400 font-bold tracking-wider uppercase">
                 Session Cycle: #1
             </div>
         </div>
 
-        <div class="business-card rounded-xl p-5 space-y-4">
-            <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <i data-lucide="briefcase" class="w-3.5 h-3.5 text-blue-400"></i> Current Objective
+        <div class="business-card rounded-2xl p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="briefcase" class="w-4 h-4 text-blue-400"></i> Current Objective
                 </span>
-                <span id="achievement-percent" class="text-sm font-bold text-blue-400 tabular-nums">0%</span>
+                <span id="achievement-percent" class="text-base font-black text-blue-400 tabular-nums">0%</span>
             </div>
-            <div id="objective-text" class="text-base font-bold text-white bg-black/40 px-4 py-3.5 rounded-lg border border-white/10 leading-relaxed min-h-[50px] tracking-wide">
+            <div id="objective-text" class="text-xl font-extrabold text-white bg-black/50 px-4 py-4 rounded-xl border border-white/10 leading-snug min-h-[60px] tracking-wide">
                 Workspace and Meeting Minutes Analytics Execution
             </div>
-            <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
+            <div class="w-full bg-white/10 h-3 rounded-full overflow-hidden">
                 <div id="achievement-bar" class="h-full bg-blue-500 w-0 transition-all duration-500"></div>
             </div>
         </div>
 
-        <div id="stream-popup" class="business-card rounded-xl p-4 border-l-2 border-l-blue-400 popup-transition">
-            <div class="flex items-start gap-3">
-                <div class="p-1.5 bg-blue-500/10 rounded mt-0.5">
-                    <i data-lucide="terminal" class="w-3.5 h-3.5 text-blue-400"></i>
+        <div id="stream-popup" class="business-card rounded-2xl p-5 border-l-4 border-l-blue-400 popup-transition">
+            <div class="flex items-start gap-4">
+                <div class="p-2 bg-blue-500/10 rounded-lg mt-0.5">
+                    <i data-lucide="terminal" class="w-5 h-5 text-blue-400"></i>
                 </div>
                 <div class="flex-1">
-                    <h4 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Executive Insights</h4>
-                    <p id="popup-text" class="text-base text-slate-100 mt-1.5 leading-relaxed font-bold tracking-wide">
+                    <h4 class="text-xs font-bold text-blue-400 uppercase tracking-widest">Executive Insights</h4>
+                    <p id="popup-text" class="text-xl text-slate-100 mt-2 leading-snug font-extrabold tracking-wide">
                         Awaiting brief updates...
                     </p>
                 </div>
@@ -104,7 +101,7 @@
 
     </div>
 
-    <div id="control-panel" class="bg-slate-900 border border-white/15 rounded-xl p-5 space-y-4 shadow-2xl flex-shrink-0 mt-2">
+    <div id="control-panel" class="bg-slate-900 border border-white/15 rounded-2xl p-5 space-y-4 shadow-2xl flex-shrink-0 mt-1">
         <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-white/10 pb-2">
             <span class="flex items-center gap-1.5"><i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i> Streamer Control Dashboard</span>
             <span class="text-[9px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono border border-blue-500/30">Interact Window Open</span>
@@ -145,6 +142,9 @@
                     </button>
                 </div>
             </div>
+            <button onclick="playAlertSound()" class="w-full mt-1 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-400 rounded transition border border-white/5">
+                🎵 Click to Test Notification Sound
+            </button>
         </div>
 
         <div class="space-y-2 border-t border-white/5 pt-3">
@@ -164,9 +164,9 @@
         </div>
     </div>
 
-    <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-500.wav" preload="auto"></audio>
+    <audio id="alert-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
 
-    <script>
+    <script {timestamp="2026-07-07"}>
         // --- POMODORO CORE CONFIG ---
         const MODES = {
             FOCUS: { name: 'FOCUS PHASE', minutes: 25 },
@@ -186,6 +186,7 @@
         const cycleDisplay = document.getElementById('cycle-display');
         const iconPlay = document.getElementById('icon-play');
         const textPlay = document.getElementById('text-play');
+        const alertSound = document.getElementById('alert-sound');
 
         function updateTimerDisplay() {
             const mins = String(Math.floor(timeRemaining / 60)).padStart(2, '0');
@@ -198,15 +199,23 @@
             cycleDisplay.textContent = `Session Cycle: #${currentCycle}`;
             
             if (currentMode === MODES.FOCUS) {
-                currentPhaseElement.className = "text-[11px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded mt-1 inline-block";
-                timerDisplay.className = "text-7xl font-light tracking-tight text-white tabular-nums my-4";
+                currentPhaseElement.className = "text-2xl font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 border-2 border-blue-500/30 px-5 py-2 rounded-xl inline-block";
+                timerDisplay.className = "text-8xl font-light tracking-tighter text-white tabular-nums my-5";
             } else {
-                currentPhaseElement.className = "text-[11px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded mt-1 inline-block";
-                timerDisplay.className = "text-7xl font-light tracking-tight text-emerald-400 tabular-nums my-4";
+                currentPhaseElement.className = "text-2xl font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border-2 border-emerald-500/30 px-5 py-2 rounded-xl inline-block";
+                timerDisplay.className = "text-8xl font-light tracking-tighter text-emerald-400 tabular-nums my-5";
             }
         }
 
+        function playAlertSound() {
+            alertSound.currentTime = 0;
+            alertSound.play().catch(e => console.log("Audio unlock triggered"));
+        }
+
         function toggleTimer() {
+            playAlertSound(); 
+            setTimeout(() => { alertSound.pause(); alertSound.currentTime = 0; }, 100);
+
             if (isRunning) {
                 clearInterval(timer);
                 iconPlay.setAttribute('data-lucide', 'play');
@@ -229,7 +238,7 @@
         }
 
         function handlePhaseEnd() {
-            document.getElementById('alert-sound').play().catch(e => console.log("Audio playback deferred"));
+            playAlertSound();
             clearInterval(timer);
             isRunning = false;
 
