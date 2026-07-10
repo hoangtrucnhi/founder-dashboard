@@ -215,7 +215,6 @@
             const seconds = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('clock-display').textContent = `${hours}:${minutes}:${seconds}`;
 
-            // Tự động lấy định dạng múi giờ hệ thống
             const offsetMin = now.getTimezoneOffset();
             const offsetHours = -offsetMin / 60;
             const gmtString = `GMT${offsetHours >= 0 ? '+' : ''}${offsetHours}`;
@@ -281,12 +280,14 @@
 
         function playAlertSound() {
             alertSound.currentTime = 0;
-            alertSound.play().catch(e => console.log("Audio contextual unlock trigger"));
+            alertSound.play().catch(e => console.log("Audio play blocked or waiting gesture"));
         }
 
         function toggleTimer() {
-            playAlertSound(); 
-            setTimeout(() => { alertSound.pause(); alertSound.currentTime = 0; }, 100);
+            // Chỉ làm blip âm thanh rất ngắn để kích hoạt Audio Context khi người dùng chủ động tương tác nút bấm
+            alertSound.play().then(() => {
+                setTimeout(() => { alertSound.pause(); alertSound.currentTime = 0; }, 50);
+            }).catch(e => console.log("Unlock sound failed"));
 
             if (isRunning) {
                 clearInterval(timer);
@@ -305,23 +306,27 @@
                 isRunning = true;
                 iconPlay.setAttribute('data-lucide', 'pause');
                 textPlay.textContent = "Pause Timer";
-                timer = setInterval(() => {
-                    if (timeRemaining > 0) {
-                        timeRemaining--;
-                        updateTimerDisplay();
-                    } else {
-                        handlePhaseEnd();
-                    }
-                }, 1000);
+                startIntervalLogic();
             }
             lucide.createIcons();
         }
 
-        function handlePhaseEnd() {
-            playAlertSound();
-            clearInterval(timer);
-            isRunning = false;
+        function startIntervalLogic() {
+            timer = setInterval(() => {
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                } else {
+                    handlePhaseEnd();
+                }
+            }, 1000);
+        }
 
+        function handlePhaseEnd() {
+            playAlertSound(); // Âm thanh báo hiệu sẽ chạy hết một cách tự nhiên
+            clearInterval(timer);
+
+            // Chuyển đổi trạng thái phiên kế tiếp
             if (currentMode.isPrep) {
                 currentMode = MODES.FOCUS;
                 timeRemaining = currentMode.minutes * 60;
@@ -334,13 +339,16 @@
                 timeRemaining = currentMode.minutes * 60;
             }
 
-            iconPlay.setAttribute('data-lucide', 'play');
-            textPlay.textContent = "Start Timer";
-            
             updateGauges();
             updateTimerDisplay();
+
+            // Tự động chạy tiếp phiên tiếp theo trực tiếp thay vì thông qua toggleTimer()
+            isRunning = true;
+            iconPlay.setAttribute('data-lucide', 'pause');
+            textPlay.textContent = "Pause Timer";
             lucide.createIcons();
-            toggleTimer(); 
+            
+            startIntervalLogic();
         }
 
         function resetTimer() {
@@ -372,7 +380,6 @@
             const container = document.getElementById('objectives-container');
             const controlContainer = document.getElementById('control-objectives-list');
             
-            // Render giao diện trên Livestream OBS
             container.innerHTML = objectives.map(obj => {
                 const isDone = obj.progress === 100;
                 const textStyle = isDone ? 'text-slate-500 line-through font-medium' : (obj.active ? 'text-white font-extrabold' : 'text-slate-300 font-semibold');
@@ -393,7 +400,6 @@
                 `;
             }).join('');
 
-            // Render giao diện điều khiển (Control Panel)
             if (controlContainer) {
                 controlContainer.innerHTML = objectives.map(obj => `
                     <div class="flex flex-col p-2.5 bg-black/40 border rounded gap-2 ${obj.active ? 'border-blue-500/60 bg-blue-950/20' : 'border-white/10'}">
@@ -424,7 +430,6 @@
             const text = input.value.trim();
             if (text !== '') {
                 objectives.forEach(o => o.active = false); 
-                // Sử dụng unshift để đưa mục tiêu mới lên đầu list
                 objectives.unshift({
                     id: Date.now(),
                     text: text,
@@ -495,7 +500,7 @@
             thoughtsInput.value = "";
         }
 
-        // Khởi tạo trạng thái ban đầu của trang Dashboard
+        // Khởi tạo trạng thái ban đầu
         document.getElementById('schedule-input').value = "09:00 AM: Setup Workspace & Project Kickoff\n02:30 PM: Code Review & Direct Q&A Session\n08:00 PM: UI/UX Refactoring Recap";
         updateSchedule();
         renderObjectives();
