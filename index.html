@@ -83,7 +83,7 @@
             </div>
             <div class="text-right">
                 <span id="timezone-display" class="text-[10px] bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-lg font-bold border border-purple-500/30 uppercase tracking-wider">
-                    ICT (GMT+7)
+                    HO CHI MINH CITY (GMT+7)
                 </span>
             </div>
         </div>
@@ -107,7 +107,7 @@
                 </span>
             </div>
             <div id="objectives-container" class="space-y-3 max-h-[240px] overflow-y-auto pr-1">
-                </div>
+            </div>
         </div>
 
         <div class="business-card rounded-2xl p-5 space-y-3">
@@ -118,7 +118,7 @@
                 <h4 class="text-xl font-black text-pink-400 uppercase tracking-wide">Tomorrow's Schedule</h4>
             </div>
             <ul id="schedule-list" class="text-sm text-slate-200 space-y-2 font-bold tracking-wide">
-                </ul>
+            </ul>
         </div>
 
         <div id="stream-popup" class="business-card rounded-2xl p-5 border-l-4 border-l-blue-400 popup-transition space-y-3">
@@ -174,7 +174,7 @@
             
             <label class="text-[11px] font-semibold text-slate-400 block mt-2">Objectives List Progress Control:</label>
             <div id="control-objectives-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                </div>
+            </div>
         </div>
         
         <div class="space-y-2 border-t border-white/5 pt-3">
@@ -220,11 +220,16 @@
             const offsetHours = -offsetMin / 60;
             const gmtString = `GMT${offsetHours >= 0 ? '+' : ''}${offsetHours}`;
             
-            // Tìm ký hiệu viết tắt khu vực (Vd: ICT, EST)
             const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            let zoneLabel = "Timezone";
-            if(tzName.includes("Asia/Ho_Chi_Minh") || tzName.includes("Bangkok")) zoneLabel = "ICT";
-            else zoneLabel = tzName.split('/').pop().replace('_', ' ');
+            let zoneLabel = "HO CHI MINH CITY";
+            
+            if (tzName.includes("Asia/Ho_Chi_Minh") || tzName.includes("Saigon")) {
+                zoneLabel = "HO CHI MINH CITY";
+            } else if (tzName.includes("Bangkok")) {
+                zoneLabel = "ICT";
+            } else {
+                zoneLabel = tzName.split('/').pop().replace('_', ' ').toUpperCase();
+            }
 
             document.getElementById('timezone-display').textContent = `${zoneLabel} (${gmtString})`;
         }
@@ -243,7 +248,7 @@
         let timeRemaining = currentMode.minutes * 60;
         let currentCycle = 1;
         let isRunning = false;
-        let hasInitializedPrep = false; // Biến cờ kiểm soát: chỉ kích hoạt 10 giây một lần duy nhất khi nhấn chạy phiên mới
+        let hasInitializedPrep = false; 
 
         const timerDisplay = document.getElementById('timer-display');
         const currentPhaseElement = document.getElementById('current-phase');
@@ -289,7 +294,6 @@
                 textPlay.textContent = "Start Timer";
                 isRunning = false;
             } else {
-                // Nếu chưa từng chạy đếm ngược chuẩn bị cho chuỗi phiên này, nhảy vào 10 giây PREPARE đầu tiên
                 if (!hasInitializedPrep && currentMode === MODES.FOCUS && timeRemaining === MODES.FOCUS.minutes * 60) {
                     currentMode = MODES.COUNTDOWN;
                     timeRemaining = MODES.COUNTDOWN.seconds;
@@ -319,19 +323,15 @@
             isRunning = false;
 
             if (currentMode.isPrep) {
-                // Hết 10 giây chuẩn bị -> Chuyển trực tiếp sang Focus Phase chính thức
                 currentMode = MODES.FOCUS;
                 timeRemaining = currentMode.minutes * 60;
             } else if (currentMode === MODES.FOCUS) {
-                // Hết Focus -> Chuyển sang Short Break nghỉ ngơi ngắn
                 currentMode = MODES.SHORT;
                 timeRemaining = currentMode.minutes * 60;
             } else {
-                // Hết Break -> Tăng Cycle, quay lại trực tiếp Focus (Không lặp lại 10 giây chuẩn bị nữa)
                 currentCycle++;
                 currentMode = MODES.FOCUS;
                 timeRemaining = currentMode.minutes * 60;
-                // KHÔNG reset biến hasInitializedPrep ở đây giúp duy trì vòng lặp Focus-Break thuần túy vô tận
             }
 
             iconPlay.setAttribute('data-lucide', 'play');
@@ -340,7 +340,7 @@
             updateGauges();
             updateTimerDisplay();
             lucide.createIcons();
-            toggleTimer(); // Tự động kích hoạt liên tục cho các phiên tiếp theo liền mạch
+            toggleTimer(); 
         }
 
         function resetTimer() {
@@ -348,7 +348,7 @@
             isRunning = false;
             currentMode = MODES.FOCUS;
             timeRemaining = currentMode.minutes * 60;
-            hasInitializedPrep = false; // Đặt lại cờ để lần nhấn Start tiếp theo sau khi dừng/reset lại có 10 giây chuẩn bị đầu tiên
+            hasInitializedPrep = false; 
             iconPlay.setAttribute('data-lucide', 'play');
             textPlay.textContent = "Start Timer";
             updateTimerDisplay();
@@ -373,19 +373,25 @@
             const controlContainer = document.getElementById('control-objectives-list');
             
             // Render giao diện trên Livestream OBS
-            container.innerHTML = objectives.map(obj => `
-                <div class="p-3.5 rounded-xl border transition-all duration-300 ${obj.active ? 'bg-blue-500/10 border-blue-500/40 shadow-inner' : 'bg-black/30 border-white/5 opacity-60'}">
-                    <div class="flex justify-between items-start gap-3 mb-2">
-                        <span class="text-sm font-extrabold leading-snug tracking-wide ${obj.active ? 'text-white' : 'text-slate-400 line-through'}">
-                            ${obj.active ? '🎯 ' : '✅ '}${obj.text}
-                        </span>
-                        <span class="text-sm font-black ${obj.active ? 'text-blue-400' : 'text-slate-500'} tabular-nums">${obj.progress}%</span>
+            container.innerHTML = objectives.map(obj => {
+                const isDone = obj.progress === 100;
+                const textStyle = isDone ? 'text-slate-500 line-through font-medium' : (obj.active ? 'text-white font-extrabold' : 'text-slate-300 font-semibold');
+                const iconMarker = isDone ? '✅ ' : (obj.active ? '🎯 ' : '🔹 ');
+
+                return `
+                    <div class="p-3.5 rounded-xl border transition-all duration-300 ${obj.active ? 'bg-blue-500/10 border-blue-500/40 shadow-inner' : 'bg-black/30 border-white/5 opacity-80'}">
+                        <div class="flex justify-between items-start gap-3 mb-2">
+                            <span class="text-sm leading-snug tracking-wide ${textStyle}">
+                                ${iconMarker}${obj.text}
+                            </span>
+                            <span class="text-sm font-black ${obj.active ? 'text-blue-400' : 'text-slate-500'} tabular-nums">${obj.progress}%</span>
+                        </div>
+                        <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                            <div class="h-full transition-all duration-500 ${isDone ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${obj.progress}%"></div>
+                        </div>
                     </div>
-                    <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                        <div class="h-full transition-all duration-500 ${obj.progress === 100 ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${obj.progress}%"></div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             // Render giao diện điều khiển (Control Panel)
             if (controlContainer) {
@@ -417,8 +423,9 @@
             const input = document.getElementById('new-objective-input');
             const text = input.value.trim();
             if (text !== '') {
-                objectives.forEach(o => o.active = false); // Tự động kích hoạt mục tiêu mới thêm vào
-                objectives.push({
+                objectives.forEach(o => o.active = false); 
+                // Sử dụng unshift để đưa mục tiêu mới lên đầu list
+                objectives.unshift({
                     id: Date.now(),
                     text: text,
                     progress: 0,
@@ -443,7 +450,7 @@
         }
 
         function deleteObjective(id) {
-            if (objectives.length <= 1) return; // Luôn giữ tối thiểu một mục tiêu mẫu
+            if (objectives.length <= 1) return; 
             const index = objectives.findIndex(o => o.id === id);
             const wasActive = objectives[index].active;
             objectives.splice(index, 1);
