@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PopMinutes Balanced Ultra-Large Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2=family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: rgba(0, 0, 0, 0); /* Trong suốt cho OBS */
+            background: rgba(0, 0, 0, 0); /* Trong suốt cho OBS Overlay */
             margin: 0;
             padding: 16px;
-            overflow: hidden;
+            overflow-x: hidden;
             display: flex;
             align-items: start;
             gap: 24px;
@@ -52,12 +52,42 @@
                 width: 430px;
             }
         }
+        
+        /* Tùy chỉnh thanh cuộn cho danh sách mục tiêu */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 
     <div class="w-[430px] space-y-5 flex-shrink-0">
         
+        <div class="business-card rounded-2xl p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                    <i data-lucide="clock" class="w-5 h-5 text-purple-400"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Current Time</div>
+                    <div id="clock-display" class="text-2xl font-black text-white tabular-nums leading-none mt-1">00:00:00</div>
+                </div>
+            </div>
+            <div class="text-right">
+                <span id="timezone-display" class="text-[10px] bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-lg font-bold border border-purple-500/30 uppercase tracking-wider">
+                    ICT (GMT+7)
+                </span>
+            </div>
+        </div>
+
         <div class="business-card rounded-2xl p-6 text-center relative overflow-hidden space-y-4">
             <div id="current-phase" class="w-full text-3xl font-black uppercase tracking-wider text-blue-400 bg-blue-500/10 border-2 border-blue-500/30 py-3 rounded-xl block">
                 FOCUS PHASE
@@ -73,16 +103,22 @@
         <div class="business-card rounded-2xl p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-white/10 pb-3">
                 <span class="text-xl font-black text-slate-200 uppercase tracking-wide flex items-center gap-2">
-                    <i data-lucide="briefcase" class="w-6 h-6 text-blue-400"></i> Current Objective
+                    <i data-lucide="target" class="w-6 h-6 text-blue-400"></i> Stream Objectives
                 </span>
-                <span id="achievement-percent" class="text-xl font-black text-blue-400 tabular-nums">0%</span>
             </div>
-            <div id="objective-text" class="text-xl font-extrabold text-white bg-black/50 px-4 py-4 rounded-xl border border-white/10 leading-snug min-h-[60px] tracking-wide">
-                Workspace and Meeting Minutes Analytics Execution
+            <div id="objectives-container" class="space-y-3 max-h-[240px] overflow-y-auto pr-1">
+                </div>
+        </div>
+
+        <div class="business-card rounded-2xl p-5 space-y-3">
+            <div class="flex items-center gap-3 border-b border-white/10 pb-2">
+                <div class="p-2 bg-pink-500/10 rounded-xl border border-pink-500/20">
+                    <i data-lucide="calendar" class="w-5 h-5 text-pink-400"></i>
+                </div>
+                <h4 class="text-xl font-black text-pink-400 uppercase tracking-wide">Tomorrow's Schedule</h4>
             </div>
-            <div class="w-full bg-white/10 h-3 rounded-full overflow-hidden">
-                <div id="achievement-bar" class="h-full bg-blue-500 w-0 transition-all duration-500"></div>
-            </div>
+            <ul id="schedule-list" class="text-sm text-slate-200 space-y-2 font-bold tracking-wide">
+                </ul>
         </div>
 
         <div id="stream-popup" class="business-card rounded-2xl p-5 border-l-4 border-l-blue-400 popup-transition space-y-3">
@@ -106,42 +142,48 @@
         </div>
         
         <div class="space-y-1.5">
-            <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit Current Objective:
-            </label>
-            <input type="text" id="target-input" class="w-full bg-black/40 border border-white/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition" 
-                value="Workspace and Meeting Minutes Analytics Execution" oninput="document.getElementById('objective-text').textContent = this.value">
-        </div>
-
-        <div class="flex items-center justify-between bg-black/20 p-3 rounded border border-white/5">
-            <span class="text-xs text-slate-300 font-medium">Adjust Progress Milestone:</span>
-            <div class="flex gap-2">
-                <button onclick="adjustProgress(-10)" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-xs font-bold text-white rounded border border-white/20 transition shadow">
-                    -10%
-                </button>
-                <button onclick="adjustProgress(10)" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-xs font-bold text-white rounded border border-blue-400 transition shadow">
-                    +10%
-                </button>
-            </div>
-        </div>
-        
-        <div class="space-y-1.5">
             <label class="text-[11px] font-semibold text-slate-300"><i data-lucide="clock" class="w-3.5 h-3.5 inline mr-1"></i> Timer Management:</label>
             <div class="grid grid-cols-3 gap-2">
                 <button onclick="toggleTimer()" id="btn-play" class="col-span-2 py-2.5 bg-white hover:bg-slate-100 text-slate-950 text-xs font-bold rounded transition flex items-center justify-center gap-1.5 shadow-md">
                     <i data-lucide="play" class="w-4 h-4 fill-slate-950" id="icon-play"></i> <span id="text-play">Start Timer</span>
                 </button>
                 <div class="flex gap-1">
-                    <button onclick="resetTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Reset">
+                    <button onclick="resetTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Full Reset / Stop">
                         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                     </button>
-                    <button onclick="skipTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Skip">
+                    <button onclick="skipTimer()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded border border-white/10 flex items-center justify-center transition" title="Skip Phase">
                         <i data-lucide="skip-forward" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
             <button onclick="playAlertSound()" class="w-full mt-1 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-400 rounded transition border border-white/5">
                 🎵 Click to Test Notification Sound
+            </button>
+        </div>
+
+        <div class="space-y-2 border-t border-white/5 pt-3">
+            <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-blue-400"></i> Add New Objective:
+            </label>
+            <div class="flex gap-2">
+                <input type="text" id="new-objective-input" class="flex-1 bg-black/40 border border-white/20 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Type new goal here...">
+                <button onclick="addObjective()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white rounded transition">
+                    Add
+                </button>
+            </div>
+            
+            <label class="text-[11px] font-semibold text-slate-400 block mt-2">Objectives List Progress Control:</label>
+            <div id="control-objectives-list" class="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                </div>
+        </div>
+        
+        <div class="space-y-2 border-t border-white/5 pt-3">
+            <label class="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-pink-400"></i> Tomorrow's Live Schedule Setup:
+            </label>
+            <textarea id="schedule-input" class="w-full bg-black/40 border border-white/20 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500 h-16 resize-none" placeholder="Enter schedule lines..."></textarea>
+            <button onclick="updateSchedule()" class="w-full py-1.5 bg-pink-600 hover:bg-pink-500 text-xs font-bold text-white rounded transition shadow">
+                Update Schedule Card
             </button>
         </div>
 
@@ -165,7 +207,31 @@
     <audio id="alert-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
 
     <script>
-        // --- POMODORO CORE CONFIG ---
+        // --- ĐỒNG HỒ THỜI GIAN THỰC & MÚI GIỜ ---
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock-display').textContent = `${hours}:${minutes}:${seconds}`;
+
+            // Tự động lấy định dạng múi giờ hệ thống
+            const offsetMin = now.getTimezoneOffset();
+            const offsetHours = -offsetMin / 60;
+            const gmtString = `GMT${offsetHours >= 0 ? '+' : ''}${offsetHours}`;
+            
+            // Tìm ký hiệu viết tắt khu vực (Vd: ICT, EST)
+            const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            let zoneLabel = "Timezone";
+            if(tzName.includes("Asia/Ho_Chi_Minh") || tzName.includes("Bangkok")) zoneLabel = "ICT";
+            else zoneLabel = tzName.split('/').pop().replace('_', ' ');
+
+            document.getElementById('timezone-display').textContent = `${zoneLabel} (${gmtString})`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- CẤU HÌNH POMODORO CORE ---
         const MODES = {
             COUNTDOWN: { name: 'PREPARE PHASE', seconds: 10, isPrep: true },
             FOCUS: { name: 'FOCUS PHASE', minutes: 25 },
@@ -177,8 +243,7 @@
         let timeRemaining = currentMode.minutes * 60;
         let currentCycle = 1;
         let isRunning = false;
-        let currentProgress = 0;
-        let hasInitializedPrep = false; // Đánh dấu kiểm soát nút Start lần đầu
+        let hasInitializedPrep = false; // Biến cờ kiểm soát: chỉ kích hoạt 10 giây một lần duy nhất khi nhấn chạy phiên mới
 
         const timerDisplay = document.getElementById('timer-display');
         const currentPhaseElement = document.getElementById('current-phase');
@@ -198,7 +263,6 @@
             cycleDisplay.textContent = `Session Cycle: #${currentCycle}`;
             
             if (currentMode.isPrep) {
-                // Màu vàng hổ phách đặc thù cho 10 giây chuẩn bị
                 currentPhaseElement.className = "w-full text-3xl font-black uppercase tracking-wider text-amber-400 bg-amber-500/10 border-2 border-amber-500/30 py-3 rounded-xl block";
                 timerDisplay.className = "text-8xl font-light tracking-tighter text-amber-400 tabular-nums my-2";
             } else if (currentMode === MODES.FOCUS) {
@@ -212,7 +276,7 @@
 
         function playAlertSound() {
             alertSound.currentTime = 0;
-            alertSound.play().catch(e => console.log("Audio unlock triggered"));
+            alertSound.play().catch(e => console.log("Audio contextual unlock trigger"));
         }
 
         function toggleTimer() {
@@ -225,12 +289,13 @@
                 textPlay.textContent = "Start Timer";
                 isRunning = false;
             } else {
-                // Nếu bắt đầu từ trạng thái reset hoặc lần đầu tiên bấm: Ép nhảy vào 10s chuẩn bị trước
+                // Nếu chưa từng chạy đếm ngược chuẩn bị cho chuỗi phiên này, nhảy vào 10 giây PREPARE đầu tiên
                 if (!hasInitializedPrep && currentMode === MODES.FOCUS && timeRemaining === MODES.FOCUS.minutes * 60) {
                     currentMode = MODES.COUNTDOWN;
                     timeRemaining = MODES.COUNTDOWN.seconds;
                     hasInitializedPrep = true;
                     updateGauges();
+                    updateTimerDisplay();
                 }
 
                 isRunning = true;
@@ -254,19 +319,19 @@
             isRunning = false;
 
             if (currentMode.isPrep) {
-                // Hết 10 giây chuẩn bị -> Chuyển sang Focus
+                // Hết 10 giây chuẩn bị -> Chuyển trực tiếp sang Focus Phase chính thức
                 currentMode = MODES.FOCUS;
                 timeRemaining = currentMode.minutes * 60;
             } else if (currentMode === MODES.FOCUS) {
-                // Hết Focus -> Chuyển sang Short Break luôn (Bỏ Long Break)
+                // Hết Focus -> Chuyển sang Short Break nghỉ ngơi ngắn
                 currentMode = MODES.SHORT;
                 timeRemaining = currentMode.minutes * 60;
             } else {
-                // Hết Short Break -> Quay lại Focus và tăng cycle
+                // Hết Break -> Tăng Cycle, quay lại trực tiếp Focus (Không lặp lại 10 giây chuẩn bị nữa)
                 currentCycle++;
                 currentMode = MODES.FOCUS;
                 timeRemaining = currentMode.minutes * 60;
-                hasInitializedPrep = false; // Reset cờ để vòng kế tiếp lại có 10s chuẩn bị
+                // KHÔNG reset biến hasInitializedPrep ở đây giúp duy trì vòng lặp Focus-Break thuần túy vô tận
             }
 
             iconPlay.setAttribute('data-lucide', 'play');
@@ -275,7 +340,7 @@
             updateGauges();
             updateTimerDisplay();
             lucide.createIcons();
-            toggleTimer(); // Chạy tự động chu kỳ tiếp theo
+            toggleTimer(); // Tự động kích hoạt liên tục cho các phiên tiếp theo liền mạch
         }
 
         function resetTimer() {
@@ -283,7 +348,7 @@
             isRunning = false;
             currentMode = MODES.FOCUS;
             timeRemaining = currentMode.minutes * 60;
-            hasInitializedPrep = false;
+            hasInitializedPrep = false; // Đặt lại cờ để lần nhấn Start tiếp theo sau khi dừng/reset lại có 10 giây chuẩn bị đầu tiên
             iconPlay.setAttribute('data-lucide', 'play');
             textPlay.textContent = "Start Timer";
             updateTimerDisplay();
@@ -297,20 +362,115 @@
             handlePhaseEnd();
         }
 
-        // --- ACHIEVEMENT MANAGEMENT ---
-        const achievementPercent = document.getElementById('achievement-percent');
-        const achievementBar = document.getElementById('achievement-bar');
+        // --- HỆ THỐNG QUẢN LÝ DANH SÁCH MỤC TIÊU (OBJECTIVES) ---
+        let objectives = [
+            { id: 1, text: "Workspace and Meeting Minutes Analytics Execution", progress: 35, active: true },
+            { id: 2, text: "Review Stream UI Graphics & Overlay Transparency", progress: 100, active: false }
+        ];
 
-        function adjustProgress(amount) {
-            currentProgress += amount;
-            if (currentProgress < 0) currentProgress = 0;
-            if (currentProgress > 100) currentProgress = 100;
+        function renderObjectives() {
+            const container = document.getElementById('objectives-container');
+            const controlContainer = document.getElementById('control-objectives-list');
             
-            achievementPercent.textContent = `${currentProgress}%`;
-            achievementBar.style.width = `${currentProgress}%`;
+            // Render giao diện trên Livestream OBS
+            container.innerHTML = objectives.map(obj => `
+                <div class="p-3.5 rounded-xl border transition-all duration-300 ${obj.active ? 'bg-blue-500/10 border-blue-500/40 shadow-inner' : 'bg-black/30 border-white/5 opacity-60'}">
+                    <div class="flex justify-between items-start gap-3 mb-2">
+                        <span class="text-sm font-extrabold leading-snug tracking-wide ${obj.active ? 'text-white' : 'text-slate-400 line-through'}">
+                            ${obj.active ? '🎯 ' : '✅ '}${obj.text}
+                        </span>
+                        <span class="text-sm font-black ${obj.active ? 'text-blue-400' : 'text-slate-500'} tabular-nums">${obj.progress}%</span>
+                    </div>
+                    <div class="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                        <div class="h-full transition-all duration-500 ${obj.progress === 100 ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${obj.progress}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render giao diện điều khiển (Control Panel)
+            if (controlContainer) {
+                controlContainer.innerHTML = objectives.map(obj => `
+                    <div class="flex flex-col p-2.5 bg-black/40 border rounded gap-2 ${obj.active ? 'border-blue-500/60 bg-blue-950/20' : 'border-white/10'}">
+                        <div class="flex items-start justify-between gap-2">
+                            <button onclick="setActiveObjective(${obj.id})" class="text-left text-xs font-bold text-slate-200 hover:text-blue-400 transition flex-1 leading-tight">
+                                ${obj.active ? '👉 <span class="text-blue-400">[Active]</span> ' : '🔹 '}${obj.text}
+                            </button>
+                            <button onclick="deleteObjective(${obj.id})" class="text-slate-500 hover:text-red-400 transition" title="Delete Goal">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between border-t border-white/5 pt-1.5">
+                            <span class="text-[10px] font-mono text-slate-400">Progress: <b class="text-white">${obj.progress}%</b></span>
+                            <div class="flex gap-1">
+                                <button onclick="adjustObjProgress(${obj.id}, -10)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-[10px] text-white font-bold rounded border border-white/10">-10%</button>
+                                <button onclick="adjustObjProgress(${obj.id}, 10)" class="px-2 py-0.5 bg-blue-600 hover:bg-blue-500 text-[10px] text-white font-bold rounded">+10%</button>
+                                <button onclick="adjustObjProgress(${obj.id}, ${100 - obj.progress})" class="px-1.5 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-[10px] text-white font-bold rounded">✓</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
         }
 
-        // --- INTERACTIVE THOUGHT POPUP ---
+        function addObjective() {
+            const input = document.getElementById('new-objective-input');
+            const text = input.value.trim();
+            if (text !== '') {
+                objectives.forEach(o => o.active = false); // Tự động kích hoạt mục tiêu mới thêm vào
+                objectives.push({
+                    id: Date.now(),
+                    text: text,
+                    progress: 0,
+                    active: true
+                });
+                input.value = '';
+                renderObjectives();
+            }
+        }
+
+        function setActiveObjective(id) {
+            objectives.forEach(o => o.active = (o.id === id));
+            renderObjectives();
+        }
+
+        function adjustObjProgress(id, amount) {
+            const obj = objectives.find(o => o.id === id);
+            if (obj) {
+                obj.progress = Math.max(0, Math.min(100, obj.progress + amount));
+                renderObjectives();
+            }
+        }
+
+        function deleteObjective(id) {
+            if (objectives.length <= 1) return; // Luôn giữ tối thiểu một mục tiêu mẫu
+            const index = objectives.findIndex(o => o.id === id);
+            const wasActive = objectives[index].active;
+            objectives.splice(index, 1);
+            if (wasActive && objectives.length > 0) {
+                objectives[0].active = true;
+            }
+            renderObjectives();
+        }
+
+        // --- CÀI ĐẶT LỊCH TRÌNH NGÀY MAI ---
+        function updateSchedule() {
+            const text = document.getElementById('schedule-input').value.trim();
+            const listElement = document.getElementById('schedule-list');
+            if (text) {
+                const lines = text.split('\n');
+                listElement.innerHTML = lines.map(line => `
+                    <li class="flex items-start gap-2 bg-black/20 p-2 rounded border border-white/5">
+                        <span class="text-pink-400 mt-0.5">⚡</span>
+                        <span>${line.replace(/^•\s*/, '')}</span>
+                    </li>
+                `).join('');
+            } else {
+                listElement.innerHTML = `<li class="text-slate-500 font-medium text-xs italic">No upcoming schedule set.</li>`;
+            }
+        }
+
+        // --- PHÁT SÓNG THÔNG BÁO POPUP ---
         const thoughtsInput = document.getElementById('thoughts-input');
         const popupText = document.getElementById('popup-text');
         const streamPopup = document.getElementById('stream-popup');
@@ -328,10 +488,13 @@
             thoughtsInput.value = "";
         }
 
-        // Initialize UI Elements
-        lucide.createIcons();
+        // Khởi tạo trạng thái ban đầu của trang Dashboard
+        document.getElementById('schedule-input').value = "09:00 AM: Setup Workspace & Project Kickoff\n02:30 PM: Code Review & Direct Q&A Session\n08:00 PM: UI/UX Refactoring Recap";
+        updateSchedule();
+        renderObjectives();
         updateTimerDisplay();
         updateGauges();
+        lucide.createIcons();
     </script>
 </body>
 </html>
